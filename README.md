@@ -1,6 +1,6 @@
 # Intern-S2 B@26 恢复工具
 
-本仓库用于将**完整的 Intern-S2-Preview 基模**与单独分发的 B@26 恢复包，恢复为可加载的完整模型目录。恢复包通过微信另行提供，仓库中不包含恢复包或模型权重。
+本仓库用于将**完整的 Intern-S2-Preview 基模**与单独分发的 B@26 恢复包，恢复为可加载的完整模型目录。仓库中不包含恢复包或模型权重。
 
 ## 仓库目录
 
@@ -27,7 +27,7 @@ intern-s2-unlearning-v1-recovery/
 
 ## 使用入口
 
-准备好基模与微信收到的 `B26_restore_weights_v1.zip`，安装依赖后运行：
+准备好基模与 `B26_restore_weights_v1.zip`，安装依赖后运行：
 
 ```bash
 python scripts/restore_model.py \

@@ -217,7 +217,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='用固定 Intern-S2-Preview 基模和 B@26 恢复包离线生成完整模型；仅使用 CPU。')
     parser.add_argument('--base', type=Path, required=True, help='包含23个原始权重分片及配置、分词器、自定义源码的完整基模目录')
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--package', type=Path, help='微信单独分发的 B26_restore_weights_v1.zip')
+    group.add_argument('--package', type=Path, help='恢复包压缩文件 B26_restore_weights_v1.zip')
     group.add_argument('--checkpoint', type=Path, help='已解压的 B26_locked_BF16.pt；与 --package 二选一')
     parser.add_argument('--output', type=Path, help='完整清除后模型的全新输出目录，不能指向基模目录')
     parser.add_argument('--verify-only', action='store_true', help='只核验基模和恢复包，不生成完整模型')
