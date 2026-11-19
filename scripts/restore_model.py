@@ -162,12 +162,18 @@ def write_patched_shard(source: Path, dest: Path, weights: dict, groups: dict) -
     tmp.replace(dest)
     return {'文件': dest.name, '状态': '已修改并逐张量校验', '张量数': len(expected), 'sha256': file_sha256(dest)}
 
-def restore(base: Path, output: Path, payload: dict, base_manifest: dict, checkpoint_manifest: dict, index: dict) -> dict:
-    base, output = base.resolve(), output.resolve()
-    if output == base or output.is_relative_to(base):
+def validate_output_path(base: Path, output: Path) -> tuple[Path, Path]:
+    """在读取大体积基模前拒绝已有路径、符号链接或基模内部输出。"""
+    if output.exists() or output.is_symlink():
+        raise ValueError('输出目录已存在或是符号链接；请指定全新的目录。')
+    base, resolved = base.resolve(), output.resolve()
+    if resolved == base or resolved.is_relative_to(base):
         raise ValueError('输出目录不能等于基模目录或位于基模目录内部。')
-    if output.exists():
-        raise ValueError('输出目录已存在；为防止覆盖，请指定全新的目录。')
+    return base, resolved
+
+
+def restore(base: Path, output: Path, payload: dict, base_manifest: dict, checkpoint_manifest: dict, index: dict) -> dict:
+    base, output = validate_output_path(base, output)
     weights = payload['parameter_states']
     groups = routed_groups(payload['ablated_experts'])
     targets = set(weights) | set(groups)
@@ -227,6 +233,8 @@ def main() -> None:
         parser.error('--threads 必须是正整数')
     if not args.verify_only and args.output is None:
         parser.error('恢复模型时必须提供 --output；只做校验请加 --verify-only')
+    if not args.verify_only:
+        validate_output_path(args.base, args.output)
     torch.set_num_threads(args.threads)
     started = time.monotonic()
     base_manifest = read_json(ROOT / 'checksums/base_manifest.json')

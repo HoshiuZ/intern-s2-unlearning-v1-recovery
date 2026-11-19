@@ -96,6 +96,45 @@ class RestoreTests(unittest.TestCase):
         with safe_open(str(self.base / shard), framework='pt') as before, safe_open(str(self.root / 'without_layer2' / shard), framework='pt') as after:
             self.assertTrue(torch.equal(before.get_tensor(key), after.get_tensor(key)))
 
+    def test_异地工作目录与空格路径可校验(self):
+        resources = self.root / '工具目录 空格'
+        (resources / 'checksums').mkdir(parents=True)
+        bm = dict(self.base_manifest, original_inventory_sha256='合成基模身份')
+        (resources / 'checksums/base_manifest.json').write_text(json.dumps(bm))
+        (resources / 'checksums/checkpoint_manifest.json').write_text(json.dumps(self.manifest))
+        work = self.root / '运行目录 空格'
+        work.mkdir()
+        renamed = self.root / '基模 有空格'
+        self.base.rename(renamed)
+        argv = ['restore_model.py', '--base', '../基模 有空格', '--checkpoint', '../B26_locked_BF16.pt', '--verify-only']
+        with mock.patch.object(m, 'ROOT', resources), mock.patch.object(sys, 'argv', argv), contextlib.chdir(work), contextlib.redirect_stdout(io.StringIO()):
+            m.main()
+        self.assertFalse((work / 'recovery_report.json').exists())
+
+    def test_拒绝断开的输出符号链接(self):
+        target = self.root / '不应创建的目录'
+        link = self.root / '断开的符号链接'
+        link.symlink_to(target, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, '符号链接'):
+            m.restore(self.base, link, self.payload, self.base_manifest, self.manifest, self.index)
+        self.assertTrue(link.is_symlink())
+        self.assertFalse(target.exists())
+
+    def test_无效输出在读取大模型前拒绝(self):
+        argv = ['restore_model.py', '--base', str(self.base), '--checkpoint', str(self.checkpoint), '--output', str(self.base / '内部输出')]
+        with mock.patch.object(sys, 'argv', argv), mock.patch.object(m, 'verify_base') as verify, mock.patch.object(m, 'load_checkpoint') as load:
+            with self.assertRaisesRegex(ValueError, '输出目录'):
+                m.main()
+            verify.assert_not_called()
+            load.assert_not_called()
+
+    def test_空间不足不创建输出(self):
+        target = self.root / '空间不足时不创建'
+        with mock.patch.object(m.shutil, 'disk_usage', return_value=type('容量', (), {'free': 0})()):
+            with self.assertRaisesRegex(ValueError, '磁盘空间不足'):
+                m.restore(self.base, target, self.payload, self.base_manifest, self.manifest, self.index)
+        self.assertFalse(target.exists())
+
     def test_单独检查点入口(self):
         self.assertEqual(m.load_checkpoint(self.checkpoint, self.manifest, False)['locked_step'], 26)
 

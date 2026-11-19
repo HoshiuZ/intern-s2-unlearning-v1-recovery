@@ -27,13 +27,13 @@ intern-s2-unlearning-v1-recovery/
 
 ## 使用入口
 
-准备好基模与 `B26_restore_weights_v1.zip`，安装依赖后运行：
+准备好基模与 `B26_restore_weights_v1.zip`，安装依赖后，在仓库根目录运行。以下示例假设基模与压缩包都放在仓库的上一级目录，输出模型也保存在该级目录；具体摆放方式见[使用说明](docs/使用说明.md)。
 
 ```bash
 python scripts/restore_model.py \
-  --base /path/to/Intern-S2-Preview \
-  --package /path/to/B26_restore_weights_v1.zip \
-  --output /path/to/Intern-S2-B26
+  --base ../Intern-S2-Preview \
+  --package ../B26_restore_weights_v1.zip \
+  --output ../Intern-S2-B26
 ```
 
 恢复程序仅使用 CPU，按分片处理，不需要在 GPU 上加载完整模型。建议准备 **24 GiB 内存**及 **90 GB 可用输出空间**；基模和输出必须分开存放。完整恢复后的权重约 **73.23 GB**，输出保留基模原有配置、分词器、自定义代码与多模态文件。
