@@ -1,0 +1,20 @@
+# 权重和微信单独分发的恢复包均不进入仓库。
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.zip
+*.tar
+*.gz
+*.npy
+*.model
+# 本地环境、临时文件和恢复输出。
+.venv/
+__pycache__/
+*.pyc
+*.part
+*.tmp
+restored_model/
+base_model/
+RECOVERY_INCOMPLETE.json
+recovery_report.json

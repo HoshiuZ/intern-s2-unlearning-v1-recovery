@@ -1,0 +1,8 @@
+# 可选：恢复完成后，加载完整多模态模型所用的已验证主要依赖。
+-r requirements.txt
+transformers==5.2.0
+accelerate==1.15.0
+torchvision==0.23.0
+pillow==13.0.0
+sentencepiece==0.2.2
+protobuf==7.36.2
